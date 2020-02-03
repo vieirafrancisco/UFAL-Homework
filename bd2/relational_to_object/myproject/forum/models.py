@@ -6,14 +6,29 @@ class User(models.Model):
     email = models.CharField(max_length=50)
     image_url = models.CharField(max_length=200)
 
+    class Meta:
+        abstract = True
+
+class Admin(User):
+    ban_permission = models.BooleanField(null=False)
+
+class CommonUser(User):
+    online = models.BooleanField(null=False)
+
+    def __str__(self):
+        return self.name
+
+class Tag(models.Model):
+    name = models.CharField(max_length=100)
+
     def __str__(self):
         return self.name
 
 class Topic(models.Model):
-    manager = models.ForeignKey(User, on_delete=models.CASCADE)
-    # tag - ManyToManyField
+    manager = models.ForeignKey(CommonUser, on_delete=models.CASCADE)
+    tag = models.ManyToManyField(Tag, related_name="topics", related_query_name="topic")
     title = models.CharField(max_length=100)
-    description = models.CharField(max_lenght=200)
+    description = models.CharField(max_length=200)
     state = models.BooleanField(null=False)
 
     def __str__(self):
@@ -23,7 +38,7 @@ class Topic(models.Model):
         return manager.name
 
 class Post(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(CommonUser, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     content = models.TextField()
@@ -33,7 +48,5 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(CommonUser, on_delete=models.CASCADE)
     text = models.TextField()
-
-# create Tag model
